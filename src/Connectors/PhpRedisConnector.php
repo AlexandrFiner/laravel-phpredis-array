@@ -1,8 +1,8 @@
 <?php
 
-namespace AlexandrFiner\LaravelPhpredisArray\Redis\Connectors;
+namespace LaravelPhpRedisArray\Connectors;
 
-use AlexandrFiner\LaravelPhpredisArray\Redis\Connections\PhpRedisArrayConnection;
+use LaravelPhpRedisArray\Connections\PhpRedisArrayConnection;
 use Illuminate\Redis\Connectors\PhpRedisConnector as BasePhpRedisConnector;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Redis as RedisFacade;
@@ -39,6 +39,7 @@ class PhpRedisConnector extends BasePhpRedisConnector
         return new PhpRedisArrayConnection(
             $this->createRedisArrayInstance(
                 array_map($this->buildRedisArrayConnectionString(...), $config['servers']),
+                $config,
                 $options
             )
         );
@@ -96,13 +97,9 @@ class PhpRedisConnector extends BasePhpRedisConnector
         return $server['host'] . ':' . $server['port'];
     }
 
-    protected function createRedisArrayInstance(array $servers, array $options): RedisArray
+    protected function createRedisArrayInstance(array $servers, array $config, array $options): RedisArray
     {
-        $redisArray = new RedisArray(
-            $servers,
-            $config['array_options'] ?? [],
-        );
-
+        $redisArray = new RedisArray($servers, $config['array_options'] ?? []);
         if (!empty($options['password'])) {
             // @TODO: Remove after this will be implemented
             // https://github.com/phpredis/phpredis/issues/1508
@@ -110,12 +107,12 @@ class PhpRedisConnector extends BasePhpRedisConnector
             //$client->auth((string) $options['password']);
         }
 
-        if (isset($config['database'])) {
-            $redisArray->select((int)$config['database']);
+        if (isset($options['database'])) {
+            $redisArray->select((int)$options['database']);
         }
 
-        if (!empty($config['prefix'])) {
-            $redisArray->setOption(Redis::OPT_PREFIX, $config['prefix']);
+        if (!empty($options['prefix'])) {
+            $redisArray->setOption(Redis::OPT_PREFIX, $options['prefix']);
         }
 
         if (!empty($config['read_timeout'])) {
@@ -131,7 +128,7 @@ class PhpRedisConnector extends BasePhpRedisConnector
         }
 
         if (array_key_exists('serializer', $config)) {
-            $redisArray->setOption(Redis::OPT_SERIALIZER, $config['serializer']);
+            $redisArray->setOption(Redis::OPT_SERIALIZER, 2);
         }
 
         if (array_key_exists('compression', $config)) {

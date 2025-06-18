@@ -1,11 +1,13 @@
 <?php
 
-namespace AlexandrFiner\LaravelPhpredisArray\Redis\Connections;
+namespace LaravelPhpRedisArray\Connections;
 
 use Illuminate\Redis\Connections\PhpRedisConnection;
 
 class PhpRedisArrayConnection extends PhpRedisConnection
 {
+    use PacksPhpRedisValues;
+
     public function flushdb()
     {
         $arguments = func_get_args();

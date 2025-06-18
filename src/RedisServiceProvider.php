@@ -1,6 +1,6 @@
 <?php
 
-namespace AlexandrFiner\LaravelPhpredisArray\Redis;
+namespace LaravelPhpRedisArray;
 
 use Illuminate\Redis\RedisServiceProvider as BaseRedisServiceProvider;
 use Illuminate\Support\Arr;

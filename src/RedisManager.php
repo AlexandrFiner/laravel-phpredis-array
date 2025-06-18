@@ -1,8 +1,8 @@
 <?php
 
-namespace AlexandrFiner\LaravelPhpredisArray\Redis;
+namespace LaravelPhpRedisArray;
 
-use AlexandrFiner\LaravelPhpredisArray\Redis\Connectors\PhpRedisConnector;
+use LaravelPhpRedisArray\Connectors\PhpRedisConnector;
 use Illuminate\Redis\Connectors\PredisConnector;
 use Illuminate\Redis\RedisManager as BaseRedisManager;
 use InvalidArgumentException;
