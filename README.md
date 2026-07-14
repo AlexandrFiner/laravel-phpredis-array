@@ -19,6 +19,15 @@ $ composer require alexandrfiner/laravel-phpredis-array
     ])->toArray(),
 ```
 
+## Testing
+
+Tests run against real Redis shards using Docker Compose (spins up `redis-0`,
+`redis-1` and a PHP 8.4 container with the `phpredis` extension):
+
+```sh
+$ docker compose up --build --abort-on-container-exit --exit-code-from tests
+```
+
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.

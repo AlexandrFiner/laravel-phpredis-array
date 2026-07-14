@@ -22,10 +22,16 @@
             "LaravelPhpRedisArray\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "LaravelPhpRedisArray\\Tests\\": "tests/"
+        }
+    },
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require-dev": {
         "nunomaduro/collision": "^8.1.1||^7.10.0",
-        "orchestra/testbench": "^10.4"
+        "orchestra/testbench": "^10.4",
+        "phpunit/phpunit": "^11.5"
     }
 }
