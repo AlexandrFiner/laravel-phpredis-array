@@ -8,6 +8,11 @@ class PhpRedisArrayConnection extends PhpRedisConnection
 {
     use PacksPhpRedisValues;
 
+    public function pack(array $values): array
+    {
+        return $values;
+    }
+
     public function flushdb()
     {
         $arguments = func_get_args();
