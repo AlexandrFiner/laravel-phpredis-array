@@ -8,6 +8,26 @@ class PhpRedisArrayConnection extends PhpRedisConnection
 {
     use PacksPhpRedisValues;
 
+    /**
+     * RedisArray cannot route phpredis _pack/_serialize for integer arguments.
+     *
+     * @param  array<int|string, mixed>  $values
+     * @return array<int|string, mixed>
+     */
+    public function pack(array $values): array
+    {
+        if ($values === []) {
+            return $values;
+        }
+
+        $values = array_map(
+            static fn ($value) => is_int($value) ? (string) $value : $value,
+            $values,
+        );
+
+        return parent::pack($values);
+    }
+
     public function flushdb()
     {
         $arguments = func_get_args();
