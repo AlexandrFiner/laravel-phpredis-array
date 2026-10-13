@@ -1,10 +1,9 @@
-FROM php:8.4-cli
+FROM php:8.4-cli-bookworm
 
-# Install the phpredis extension (provides Redis and RedisArray classes).
-# "yes no" answers all optional-dependency prompts (igbinary/lzf/zstd/lz4) with "no".
 RUN apt-get update \
     && apt-get install -y --no-install-recommends git unzip \
-    && yes no | pecl install redis \
+    && pecl install -o -f redis-6.2.0 \
+    && rm -rf /tmp/pear \
     && docker-php-ext-enable redis \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

@@ -3,6 +3,7 @@
 namespace LaravelPhpRedisArray\Connectors;
 
 use LaravelPhpRedisArray\Connections\PhpRedisArrayConnection;
+use LaravelPhpRedisArray\Connections\PhpRedisConnection;
 use Illuminate\Redis\Connectors\PhpRedisConnector as BasePhpRedisConnector;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Redis as RedisFacade;
@@ -13,6 +14,40 @@ use RedisArray;
 
 class PhpRedisConnector extends BasePhpRedisConnector
 {
+    /**
+     * Create a new connection that rebuilds its client on any RedisException.
+     *
+     * @param  array  $config
+     * @param  array  $options
+     * @return \LaravelPhpRedisArray\Connections\PhpRedisConnection
+     */
+    public function connect(array $config, array $options): PhpRedisConnection
+    {
+        $formattedOptions = Arr::pull($config, 'options', []);
+
+        if (isset($config['prefix'])) {
+            $formattedOptions['prefix'] = $config['prefix'];
+        }
+
+        $connector = function () use ($config, $options, $formattedOptions) {
+            return $this->createClient(array_merge(
+                $config, $options, $formattedOptions
+            ));
+        };
+
+        return new PhpRedisConnection($connector(), $connector, $config);
+    }
+
+    /**
+     * Create a new RedisArray connection.
+     *
+     * @param  array  $config
+     * @param  array  $arrayOptions
+     * @param  array  $options
+     * @return \LaravelPhpRedisArray\Connections\PhpRedisArrayConnection
+     *
+     * @throws \InvalidArgumentException
+     */
     public function connectToArray(array $config, array $arrayOptions, array $options): PhpRedisArrayConnection
     {
         $options = array_merge($options, $arrayOptions, Arr::pull($config, 'options', []));
@@ -25,7 +60,7 @@ class PhpRedisConnector extends BasePhpRedisConnector
             $servers = [];
             for ($i = 0; $i < $shardCount; $i++) {
                 $servers[] = [
-                    'host' => str_replace('{shard}', $i, $hostMask),
+                    'host' => str_replace('{shard}', (string) $i, $hostMask),
                     'port' => $port,
                 ];
             }
@@ -37,6 +72,7 @@ class PhpRedisConnector extends BasePhpRedisConnector
         }
 
         return new PhpRedisArrayConnection(
+            // @phpstan-ignore argument.type (the connection wraps RedisArray, Laravel documents the client as Redis)
             $this->createRedisArrayInstance(
                 array_map($this->buildRedisArrayConnectionString(...), $config['servers']),
                 $config,
@@ -45,9 +81,18 @@ class PhpRedisConnector extends BasePhpRedisConnector
         );
     }
 
+    /**
+     * Create the Redis client instance.
+     *
+     * @param  array  $config
+     * @return \Redis
+     *
+     * @throws \LogicException
+     */
     protected function createClient(array $config): Redis
     {
         return tap(new Redis(), function (Redis $client) use ($config) {
+            // @phpstan-ignore instanceof.alwaysFalse (true when the Redis facade alias shadows the extension class, same check as in Laravel)
             if ($client instanceof RedisFacade) {
                 throw new LogicException(
                     extension_loaded('redis')
@@ -92,11 +137,27 @@ class PhpRedisConnector extends BasePhpRedisConnector
         });
     }
 
+    /**
+     * Build a RedisArray connection string from the given server configuration.
+     *
+     * @param  array  $server
+     * @return string
+     */
     protected function buildRedisArrayConnectionString(array $server): string
     {
         return $server['host'] . ':' . $server['port'];
     }
 
+    /**
+     * Create the RedisArray client instance.
+     *
+     * @param  array  $servers
+     * @param  array  $config
+     * @param  array  $options
+     * @return \RedisArray
+     *
+     * @throws \InvalidArgumentException
+     */
     protected function createRedisArrayInstance(array $servers, array $config, array $options): RedisArray
     {
         $redisArray = new RedisArray($servers, $config['array_options'] ?? []);
@@ -128,7 +189,7 @@ class PhpRedisConnector extends BasePhpRedisConnector
         }
 
         if (array_key_exists('serializer', $config)) {
-            $redisArray->setOption(Redis::OPT_SERIALIZER, 2);
+            $redisArray->setOption(Redis::OPT_SERIALIZER, '2');
         }
 
         if (array_key_exists('compression', $config)) {

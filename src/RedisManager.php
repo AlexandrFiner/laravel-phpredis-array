@@ -9,6 +9,14 @@ use InvalidArgumentException;
 
 class RedisManager extends BaseRedisManager
 {
+    /**
+     * Resolve the given connection by name.
+     *
+     * @param  string|null  $name
+     * @return \Illuminate\Redis\Connections\Connection
+     *
+     * @throws \InvalidArgumentException
+     */
     public function resolve($name = null)
     {
         $name = $name ?: 'default';
@@ -18,6 +26,12 @@ class RedisManager extends BaseRedisManager
         return parent::resolve($name);
     }
 
+    /**
+     * Resolve the given RedisArray connection by name.
+     *
+     * @param  string  $name
+     * @return \LaravelPhpRedisArray\Connections\PhpRedisArrayConnection
+     */
     protected function resolveArray($name)
     {
         return $this->connector()->connectToArray(
@@ -29,6 +43,13 @@ class RedisManager extends BaseRedisManager
         );
     }
 
+    /**
+     * Get the connector instance for the current driver.
+     *
+     * @return \Illuminate\Redis\Connectors\PredisConnector|\LaravelPhpRedisArray\Connectors\PhpRedisConnector
+     *
+     * @throws \InvalidArgumentException
+     */
     protected function connector(): PredisConnector|PhpRedisConnector
     {
         return match ($this->driver) {
