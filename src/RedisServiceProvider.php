@@ -7,6 +7,11 @@ use Illuminate\Support\Arr;
 
 class RedisServiceProvider extends BaseRedisServiceProvider
 {
+    /**
+     * Register the service provider.
+     *
+     * @return void
+     */
     public function register(): void
     {
         $this->app->singleton('redis', static function ($app) {

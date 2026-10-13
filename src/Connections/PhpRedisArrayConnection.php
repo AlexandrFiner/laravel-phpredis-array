@@ -9,6 +9,15 @@ class PhpRedisArrayConnection extends PhpRedisConnection
     use PacksPhpRedisValues;
 
     /**
+     * The RedisArray client.
+     *
+     * @var \RedisArray
+     *
+     * @phpstan-ignore property.phpDocType (the connection wraps RedisArray, Laravel documents the client as Redis)
+     */
+    protected $client;
+
+    /**
      * RedisArray cannot route phpredis _pack/_serialize for integer arguments.
      *
      * @param  array<int|string, mixed>  $values
@@ -28,6 +37,11 @@ class PhpRedisArrayConnection extends PhpRedisConnection
         return parent::pack($values);
     }
 
+    /**
+     * Flush the selected Redis database on every node.
+     *
+     * @return void
+     */
     public function flushdb()
     {
         $arguments = func_get_args();
